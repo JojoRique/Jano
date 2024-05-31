@@ -36,11 +36,20 @@ G = nx.DiGraph()
 
 #Criação dos nós, cada um representa um cruzamento, cada nó é identificado por algum rotulo unico
 # Lista de cruzamentos (nós)
-cruzamentos = ['A', 'B', 'C', 'D']
+# Lista de cruzamentos (nós) e suas informações adicionais
+cruzamentos_info = {
+    'A': {'nome': 'Cruzamento A', 'tempo_verde': 30, 'tempo_amarelo': 5, 'tempo_vermelho': 25, 'numero_veiculos': {'manha': 20, 'tarde': 30, 'noite': 15}},
+    'B': {'nome': 'Cruzamento B', 'tempo_verde': 35, 'tempo_amarelo': 5, 'tempo_vermelho': 20, 'numero_veiculos': {'manha': 25, 'tarde': 35, 'noite': 20}},
+    'C': {'nome': 'Cruzamento C', 'tempo_verde': 25, 'tempo_amarelo': 5, 'tempo_vermelho': 30, 'numero_veiculos': {'manha': 30, 'tarde': 40, 'noite': 25}},
+    'D': {'nome': 'Cruzamento D', 'tempo_verde': 40, 'tempo_amarelo': 5, 'tempo_vermelho': 15, 'numero_veiculos': {'manha': 35, 'tarde': 45, 'noite': 30}},
+}
+
+
+
 
 # Adicionando nós ao grafo utilizando um comando da bilioteca 
-G.add_nodes_from(cruzamentos)
-
+for cruzamento, info in cruzamentos_info.items():
+    G.add_node(cruzamento, **info)
 #As arestas representam as ruas entre os cruzamentos, os pesos são os segundos das arestas
 # Lista de arestas com tempos de viagem em segundos
 
@@ -76,9 +85,10 @@ nx.draw(G, layout, with_labels=True, node_size=700, node_color='lightblue', font
 # edge_labels=labels: Um dicionário de rótulos para as arestas. O dicionário labels é criado pelo comando nx.get_edge_attributes(G, 'weight'),
 #que retorna um dicionário onde as chaves são tuplas representando as arestas e os valores são os pesos dessas arestas.
 
-# Adicionando rótulos com os pesos das arestas
-labels = nx.get_edge_attributes(G, 'weight')
-nx.draw_networkx_edge_labels(G, layout, edge_labels=labels)
+
+#Adicionando rótulos com informações dos nós
+node_labels = {node: f"{data['nome']}\nVerde: {data['tempo_verde']}s\nAmarelo: {data['tempo_amarelo']}s\nVermelho: {data['tempo_vermelho']}s\nVeículos:\nManhã: {data['numero_veiculos']['manha']}\nTarde: {data['numero_veiculos']['tarde']}\nNoite: {data['numero_veiculos']['noite']}" for node, data in G.nodes(data=True)}
+nx.draw_networkx_labels(G, layout, labels=node_labels, font_size=10, font_color='darkblue')
 
 # Título do gráfico
 plt.title("Rede de Tráfego")
