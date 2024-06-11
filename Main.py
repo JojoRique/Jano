@@ -1,4 +1,4 @@
- # Passo 1: Definição do Escopo e Objetivos
+# Passo 1: Definição do Escopo e Objetivos
 # Objetivos:
 
 # Minimizar o tempo de espera dos veículos nos cruzamentos.
@@ -20,23 +20,19 @@
 # import matplotlib.pyplot as plt
 
 # abaixo estamos importando as bibliotecas a serem utilizadas, import *nome da biblioteca* as *Apelido* (normalmente damos certo apelidos por convenção)
+
 import numpy as np
 import pandas as pd
 import networkx as nx
 import matplotlib.pyplot as plt
 
-
 #representação de uma rede de tráfego com grafos, cada nó representa um cruzamento e cada aresta representa uma rua
 #aqui usaremos a biblioteca de grafos networkx
 #criação de uma variavel que será o grafo dirigo, por que grafo dirigido? pois ele permite simular fluxo de veículos em ruas e cruzamentos em direções especificas
-
-# Criação de um grafo dirigido utilizando um comando da biblioteca
 G = nx.DiGraph()
-
 
 #Criação dos nós, cada um representa um cruzamento, cada nó é identificado por algum rotulo unico
 # Lista de cruzamentos (nós)
-# Lista de cruzamentos (nós) e suas informações adicionais
 cruzamentos_info = {
     '0': {'nome': 'Cruzamento 0', 'tempo_verde': 30, 'tempo_amarelo': 5, 'tempo_vermelho': 25, 'numero_veiculos': {'manha': 20, 'tarde': 30, 'noite': 15}},
     '1': {'nome': 'Cruzamento 1', 'tempo_verde': 35, 'tempo_amarelo': 5, 'tempo_vermelho': 20, 'numero_veiculos': {'manha': 25, 'tarde': 35, 'noite': 20}},
@@ -48,86 +44,89 @@ cruzamentos_info = {
 }
 
 
-
 # Adicionando nós ao grafo utilizando um comando da bilioteca 
 for cruzamento, info in cruzamentos_info.items():
     G.add_node(cruzamento, **info)
 #As arestas representam as ruas entre os cruzamentos, os pesos são os segundos das arestas
 # Lista de arestas com tempos de viagem em segundos
 
-# nó de origem, nó de destino, peso/segundos respectivamente
+# nó de origem, nó de destino
+# Lista de arestas, com pesos definidos aleatoriamente
 ruas = [
-    ('0', '1', 5),
-    ('1', '2', 10),
-    ('2', '3', 7),
-    ('3', '0', 8),
-    ('0', '2', 12),
-    ('1', '4', 15),
-    ('4', '5', 10),
-    ('5', '6', 5),
-    ('6', '3', 20),
-    ('2', '5', 14),
-    ('4', '6', 8)
+    ('0', '1'),
+    ('1', '2'),
+    ('2', '3'),
+    ('3', '0'),
+    ('0', '2'),
+    ('1', '4'),
+    ('4', '5'),
+    ('5', '6'),
+    ('6', '3'),
+    ('2', '5'),
+    ('4', '6')
 ]
 
-# Adicionando arestas ao grafo utilizando um comando da bilioteca 
-G.add_weighted_edges_from(ruas)
+# Função para calcular o tempo de viagem ajustado pelo semáforo
+def calcular_tempo_viagem(origem, destino, tempo_basico):
+#origem: O nó de origem (cruzamento de partida).
+#destino: O nó de destino (cruzamento de chegada). Note que, nesta implementação específica, destino não é utilizado.
+#tempo_basico: O tempo básico de viagem entre a origem e o destino (sem considerar semáforos).  
 
+    tempo_verde = cruzamentos_info[origem]['tempo_verde']
+    tempo_amarelo = cruzamentos_info[origem]['tempo_amarelo']
+    tempo_vermelho = cruzamentos_info[origem]['tempo_vermelho']
+#tempo_verde, tempo_amarelo e tempo_vermelho: 
+#Extrai os tempos de sinal verde, amarelo e vermelho 
+#para o nó de origem a partir do dicionário cruzamentos_info.
+    ciclo_semaforo = tempo_verde + tempo_amarelo + tempo_vermelho
+#ciclo_semaforo: Calcula o ciclo completo do semáforo somando os tempos de sinal verde,
+# amarelo e vermelho. Esse valor representa o tempo total para um ciclo completo de semáforo.
+    tempo_espera = tempo_vermelho  # Supondo que o tempo de espera é o tempo do sinal vermelho
+    
+    tempo_total = tempo_basico + tempo_espera
+    return tempo_total
 
-# Verificação dos Caminhos Mínimos 
-#O objetivo dessa verificação é assegurar que cada aresta 
-#direta entre dois nós no grafo tem um peso que corresponde ao
-#caminho mais curto possível entre esses nós, de acordo com o 
-#algoritmo de Dijkstra
+# Adicionando arestas ao grafo com pesos ajustados pelos semáforos
+for u, v in ruas:
+#ruas é uma lista de tuplas representando as ruas (arestas) do grafo.
+#Cada tupla (u, v) representa uma aresta do nó u (origem) ao nó v (destino)
+#A iteração percorre todas as arestas definidas em ruas.
 
-#Inicialização da Verificação:
-is_minimal = True
-#Iniciamos assumindo que o grafo está em caminho mínimo (is_minimal = True)
-for u, v, weight in G.edges(data='weight'):
-#Iteramos sobre todas as arestas do grafo. Para cada aresta, u é o nó de origem, 
-#v é o nó de destino, e weight é o peso da aresta.
-    shortest_path_length = nx.dijkstra_path_length(G, u, v)
-#Calculamos o comprimento do caminho mínimo entre u e v usando o algoritmo de Dijkstra com 
-#a função nx.dijkstra_path_length. Esta função retorna o comprimento do caminho mais curto entre u e v no grafo G.
-    if weight != shortest_path_length:
-        is_minimal = False
-        break
-#Comparamos o peso da aresta (weight) com o comprimento do caminho mínimo (shortest_path_length). 
-#Se eles não são iguais, isso significa que o peso da aresta não representa o caminho mais curto possível entre u e v. Nesse caso, 
-#definimos is_minimal como False e saímos do loop (break).
-print("O grafo está em caminho mínimo?", is_minimal)
+    tempo_basico = np.random.randint(1, 20)  # Tempo básico de viagem
+#tempo_basico: Um tempo de viagem aleatório entre 1 e 19 segundos é gerado usando np.random.randint(1, 20).
+#Este valor representa o tempo de viagem sem considerar a espera no semáforo.
+    tempo_ajustado = calcular_tempo_viagem(u, v, tempo_basico)
+#calcular_tempo_viagem(u, v, tempo_basico): A função calcular_tempo_viagem é chamada com os parâmetros u (origem), v (destino), e tempo_basico.
+#A função retorna o tempo_ajustado, que é o tempo_basico acrescido do tempo de espera no semáforo do nó de origem u.
+    G.add_edge(u, v, weight=tempo_ajustado)
+#G.add_edge(u, v, weight=tempo_ajustado): Adiciona a aresta do nó u ao nó v no grafo G, com um peso (atributo weight) igual ao tempo_ajustado.
+#O peso da aresta representa o tempo de viagem ajustado considerando o impacto dos semáforos.
 
-# variavel de Layout do grafo para uma visualização mais clara utilizando a biblioteca matplotlib.pyplo
-# nx.spring_layout(G) gera um layout onde as posições dos nós são calculadas com base em um algoritmo de força.
+# Definindo o nó de origem e o nó de destino
+source = '0'
+target = '6'
+
+# Encontrar o caminho mínimo usando o algoritmo de Dijkstra
+path = nx.dijkstra_path(G, source, target)
+path_length = nx.dijkstra_path_length(G, source, target)
+
+# Visualização do grafo
+plt.figure(figsize=(12, 8))
 layout = nx.spring_layout(G)
 
-
-
-# essa variavel da biblioteca desenha os nós e as arestas do grafo.
-# G é o grafo que queremos desenhar, layout é o nome das posições dos nós no gráfico.
-# with_labels=True: Exibe os rótulos dos nós (nomes dos cruzamentos) no gráfico.
-# node_size=700: Define o tamanho dos nós. Um valor maior resulta em nós maiores.
-# node_color='lightblue': Define a cor dos nós. Aqui, os nós são coloridos em azul claro.
-# font_size=15: Define o tamanho da fonte dos rótulos dos nós.
-# font_color='black': Define a cor da fonte dos rótulos dos nós.
-plt.figure(figsize=(12, 8))
+# Desenhar o grafo com os pesos das arestas
 nx.draw(G, layout, with_labels=True, node_size=700, node_color='lightblue', font_size=15, font_color='black')
+edge_labels = nx.get_edge_attributes(G, 'weight')
+nx.draw_networkx_edge_labels(G, layout, edge_labels=edge_labels, font_color='red', font_size=12)
 
-# G: O grafo cujas arestas queremos rotular.
-# layout: As posições dos nós no gráfico, devem ser as mesmas 
-#utilizadas em nx.draw() para garantir que os rótulos das arestas sejam desenhados nos lugares corretos.
-# edge_labels=labels: Um dicionário de rótulos para as arestas. O dicionário labels é criado pelo comando nx.get_edge_attributes(G, 'weight'),
-#que retorna um dicionário onde as chaves são tuplas representando as arestas e os valores são os pesos dessas arestas.
+# Destacar o caminho mínimo no grafo
+path_edges = list(zip(path, path[1:]))
+nx.draw_networkx_edges(G, layout, edgelist=path_edges, edge_color='green', width=2)
 
-
-#Adicionando rótulos com informações dos nós
+# Adicionar rótulos com informações dos nós
 node_labels = {node: f"{data['nome']}\nVerde: {data['tempo_verde']}s\nAmarelo: {data['tempo_amarelo']}s\nVermelho: {data['tempo_vermelho']}s\nVeículos:\nManhã: {data['numero_veiculos']['manha']}\nTarde: {data['numero_veiculos']['tarde']}\nNoite: {data['numero_veiculos']['noite']}" for node, data in G.nodes(data=True)}
 nx.draw_networkx_labels(G, layout, labels=node_labels, font_size=10, font_color='darkblue')
 
 # Título do gráfico
-plt.title("Rede de Tráfego")
-#comando para mostrar o grafo
+plt.title(f"Rede de Tráfego\nCaminho Mínimo de {source} a {target}: {path} (Comprimento: {path_length})")
 plt.show()
-
-
-
