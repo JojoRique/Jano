@@ -38,12 +38,14 @@ G = nx.DiGraph()
 # Lista de cruzamentos (nós)
 # Lista de cruzamentos (nós) e suas informações adicionais
 cruzamentos_info = {
-    'A': {'nome': 'Cruzamento A', 'tempo_verde': 30, 'tempo_amarelo': 5, 'tempo_vermelho': 25, 'numero_veiculos': {'manha': 20, 'tarde': 30, 'noite': 15}},
-    'B': {'nome': 'Cruzamento B', 'tempo_verde': 35, 'tempo_amarelo': 5, 'tempo_vermelho': 20, 'numero_veiculos': {'manha': 25, 'tarde': 35, 'noite': 20}},
-    'C': {'nome': 'Cruzamento C', 'tempo_verde': 25, 'tempo_amarelo': 5, 'tempo_vermelho': 30, 'numero_veiculos': {'manha': 30, 'tarde': 40, 'noite': 25}},
-    'D': {'nome': 'Cruzamento D', 'tempo_verde': 40, 'tempo_amarelo': 5, 'tempo_vermelho': 15, 'numero_veiculos': {'manha': 35, 'tarde': 45, 'noite': 30}},
+    '0': {'nome': 'Cruzamento 0', 'tempo_verde': 30, 'tempo_amarelo': 5, 'tempo_vermelho': 25, 'numero_veiculos': {'manha': 20, 'tarde': 30, 'noite': 15}},
+    '1': {'nome': 'Cruzamento 1', 'tempo_verde': 35, 'tempo_amarelo': 5, 'tempo_vermelho': 20, 'numero_veiculos': {'manha': 25, 'tarde': 35, 'noite': 20}},
+    '2': {'nome': 'Cruzamento 2', 'tempo_verde': 25, 'tempo_amarelo': 5, 'tempo_vermelho': 30, 'numero_veiculos': {'manha': 30, 'tarde': 40, 'noite': 25}},
+    '3': {'nome': 'Cruzamento 3', 'tempo_verde': 40, 'tempo_amarelo': 5, 'tempo_vermelho': 15, 'numero_veiculos': {'manha': 35, 'tarde': 45, 'noite': 30}},
+    '4': {'nome': 'Cruzamento 4', 'tempo_verde': 20, 'tempo_amarelo': 5, 'tempo_vermelho': 35, 'numero_veiculos': {'manha': 15, 'tarde': 25, 'noite': 10}},
+    '5': {'nome': 'Cruzamento 5', 'tempo_verde': 50, 'tempo_amarelo': 5, 'tempo_vermelho': 10, 'numero_veiculos': {'manha': 40, 'tarde': 50, 'noite': 35}},
+    '6': {'nome': 'Cruzamento 6', 'tempo_verde': 45, 'tempo_amarelo': 5, 'tempo_vermelho': 20, 'numero_veiculos': {'manha': 50, 'tarde': 60, 'noite': 45}}
 }
-
 
 
 
@@ -55,19 +57,51 @@ for cruzamento, info in cruzamentos_info.items():
 
 # nó de origem, nó de destino, peso/segundos respectivamente
 ruas = [
-    ('A', 'B', 5),
-    ('B', 'C', 10),
-    ('C', 'D', 7),
-    ('D', 'A', 8),
-    ('A', 'C', 12)
+    ('0', '1', 5),
+    ('1', '2', 10),
+    ('2', '3', 7),
+    ('3', '0', 8),
+    ('0', '2', 12),
+    ('1', '4', 15),
+    ('4', '5', 10),
+    ('5', '6', 5),
+    ('6', '3', 20),
+    ('2', '5', 14),
+    ('4', '6', 8)
 ]
 
 # Adicionando arestas ao grafo utilizando um comando da bilioteca 
 G.add_weighted_edges_from(ruas)
 
+
+# Verificação dos Caminhos Mínimos 
+#O objetivo dessa verificação é assegurar que cada aresta 
+#direta entre dois nós no grafo tem um peso que corresponde ao
+#caminho mais curto possível entre esses nós, de acordo com o 
+#algoritmo de Dijkstra
+
+#Inicialização da Verificação:
+is_minimal = True
+#Iniciamos assumindo que o grafo está em caminho mínimo (is_minimal = True)
+for u, v, weight in G.edges(data='weight'):
+#Iteramos sobre todas as arestas do grafo. Para cada aresta, u é o nó de origem, 
+#v é o nó de destino, e weight é o peso da aresta.
+    shortest_path_length = nx.dijkstra_path_length(G, u, v)
+#Calculamos o comprimento do caminho mínimo entre u e v usando o algoritmo de Dijkstra com 
+#a função nx.dijkstra_path_length. Esta função retorna o comprimento do caminho mais curto entre u e v no grafo G.
+    if weight != shortest_path_length:
+        is_minimal = False
+        break
+#Comparamos o peso da aresta (weight) com o comprimento do caminho mínimo (shortest_path_length). 
+#Se eles não são iguais, isso significa que o peso da aresta não representa o caminho mais curto possível entre u e v. Nesse caso, 
+#definimos is_minimal como False e saímos do loop (break).
+print("O grafo está em caminho mínimo?", is_minimal)
+
 # variavel de Layout do grafo para uma visualização mais clara utilizando a biblioteca matplotlib.pyplo
 # nx.spring_layout(G) gera um layout onde as posições dos nós são calculadas com base em um algoritmo de força.
 layout = nx.spring_layout(G)
+
+
 
 # essa variavel da biblioteca desenha os nós e as arestas do grafo.
 # G é o grafo que queremos desenhar, layout é o nome das posições dos nós no gráfico.
@@ -76,7 +110,7 @@ layout = nx.spring_layout(G)
 # node_color='lightblue': Define a cor dos nós. Aqui, os nós são coloridos em azul claro.
 # font_size=15: Define o tamanho da fonte dos rótulos dos nós.
 # font_color='black': Define a cor da fonte dos rótulos dos nós.
-
+plt.figure(figsize=(12, 8))
 nx.draw(G, layout, with_labels=True, node_size=700, node_color='lightblue', font_size=15, font_color='black')
 
 # G: O grafo cujas arestas queremos rotular.
